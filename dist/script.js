@@ -1,6 +1,7 @@
 function startTypewriteInteraction() {
   function callbackOnFinish() {
     // alert("finito!");
+    // CAN I SEE THIS?
   }
 
   typeWriteMultipleElements([
