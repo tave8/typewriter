@@ -18,74 +18,10 @@ window.addEventListener("load", () => {
   startTypewriteInteraction();
 });
 
-function typeWriteMultipleElements(typewriteInfoList) {
-  // let func = null
-  for (let i = 0; i < typewriteInfoList.length; i++) {
-    const typewriteInfo = typewriteInfoList[i];
-
-    // typewrite default
-    // typeWrite({
-    //   text: typewriteInfo.text,
-    //   htmlEl: document.getElementById(typewriteInfo.elId),
-    //   callbackOnFinish: typewriteInfo.callbackOnFinish,
-    // });
-
-    // typewrite "one at a time"
-    const fn = typeWriteOneAtTime({
-      text: typewriteInfo.text,
-      htmlEl: document.getElementById(typewriteInfo.elId),
-      callbackOnFinish: typewriteInfo.callbackOnFinish,
-    });
-    fn()
-    fn();
-    fn();
-    // fn();
-    // func = fn
-  }
-
-}
-
 /**
- * Run the typewriting function only one at a time,
- * meaning that the function cannot be re-run until
- * it has finished the "previous" round of typewriting.
- * This prevents weird situations like a text container
- * having the typewriting functionality multiple times,
- * which means the text will be typewrite (we assume) faster
- * for each extra typewrite function call.
- * Successive function calls of typeWriteOneAtTime
- * will have no effect, until the last typewriting is complete.
- * 
- * The only "extra effort" you have to make, is that this function
- * will return to be called.
+ * The core typewriting function.
  */
-function typeWriteOneAtTime({ text, htmlEl, callbackOnFinish }) {
-  // the first time the function gets called, typewrite is available
-  let isTypewriteAvailable = true;
-
-  // returns a function that makes the magic happen:
-  // modify the state of the outer function
-  return function () {
-    // this inner function allows the value of the outer function
-    // to be changed on demand, even outside of this outer function
-    function setTypewriteAvailable(val) {
-      isTypewriteAvailable = val;
-    }
-
-    if (isTypewriteAvailable) {
-      typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOneAtTime: setTypewriteAvailable });
-    } else {
-      console.log(
-        "You are calling the typewrite function in 'one at a time' mode, " +
-          "which means you can call the typewrite function again, " +
-          "only when it has finished all its typewring."
-      );
-    }
-  };
-}
-
-
-function typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOneAtTime }) {
+function typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneAtTime }) {
   // set the typewriter as not available, so
   // this function cannot be recalled, only when it was called
   // from the function "typewrite one at a time"
@@ -103,7 +39,7 @@ function typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOn
     const randomTimeout = getRandomTimeout(10, 100);
 
     setTimeout(() => {
-      updateText(newText, htmlEl, cursorExists);
+      updateText({text: newText, elId, addCursor: cursorExists});
     }, lastTimeout);
 
     lastTimeout += timeoutStep + randomTimeout;
@@ -114,7 +50,7 @@ function typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOn
   // it's simply a timeout with timeout equal
   // to the last saved timeout
   setTimeout(() => {
-    removeCursorIfExists(htmlEl, cursorExists);
+    removeCursorIfExists({elId, cursorExists});
 
     // operationFinished = true;
     // if there's a callback, run it
@@ -131,20 +67,83 @@ function typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOn
   }, lastTimeout);
 }
 
+
+/**
+ * Typewrite multiple elements simoltaneously.
+ */
+function typeWriteMultipleElements(typewriteInfoList) {
+  // let func = null
+  for (let i = 0; i < typewriteInfoList.length; i++) {
+    const typewriteInfo = typewriteInfoList[i];
+    // console.log(typewriteInfo)
+
+    // typewrite default
+    // typeWrite(typewriteInfo);
+
+    // typewrite "one at a time"
+    const fn = typeWriteOneAtTime(typewriteInfo);
+    fn();
+    fn();
+    fn();
+    fn();
+  }
+}
+
+/**
+ * Run the typewriting function only one at a time,
+ * meaning that the function cannot be re-run until
+ * it has finished the "previous" round of typewriting.
+ * This prevents weird situations like a text container
+ * having the typewriting functionality multiple times,
+ * which means the text will be typewrite (we assume) faster
+ * for each extra typewrite function call.
+ * Successive function calls of typeWriteOneAtTime
+ * will have no effect, until the last typewriting is complete.
+ *
+ * The only "extra effort" you have to make, is that this function
+ * will return to be called.
+ */
+function typeWriteOneAtTime({ text, elId, callbackOnFinish }) {
+  // the first time the function gets called, typewrite is available
+  let isTypewriteAvailable = true;
+
+  // returns a function that makes the magic happen:
+  // modify the state of the outer function
+  return function () {
+    // this inner function allows the value of the outer function
+    // to be changed on demand, even outside of this outer function
+    function setTypewriteAvailable(val) {
+      isTypewriteAvailable = val;
+    }
+
+    if (isTypewriteAvailable) {
+      typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneAtTime: setTypewriteAvailable });
+    } else {
+      console.log(
+        "You are calling the typewrite function in 'one at a time' mode, " +
+          "which means you can call the typewrite function again, " +
+          "only when it has finished all its typewring."
+      );
+    }
+  };
+}
+
 // HELPERS
 
-function updateText(text, htmlEl, addCursor = false) {
+function updateText({text, elId, addCursor = false}) {
+  const elHtml = document.getElementById(elId)
   const cursor = addCursor ? "|" : "";
-  htmlEl.textContent = text + cursor;
+  elHtml.textContent = text + cursor;
 }
 
 function cutText(text, iUntil) {
   return text.slice(0, iUntil);
 }
 
-function removeCursorIfExists(htmlEl, cursorExists) {
+function removeCursorIfExists({elId, cursorExists}) {
   if (cursorExists) {
-    htmlEl.textContent = htmlEl.textContent.slice(0, -1);
+    const elHtml = document.getElementById(elId)
+    elHtml.textContent = elHtml.textContent.slice(0, -1);
   }
 }
 
