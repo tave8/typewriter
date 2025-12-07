@@ -5,8 +5,8 @@ function startTypewriteInteraction() {
 
   typeWriteMultipleElements([
     { elId: "p1", text: "il bicchiere mezzo pieno o mezzo intero", callbackOnFinish },
-    // { elId: "p2", text: "chi va piano va sano e va vicino" },
-    // { elId: "p3", text: "amore a primo olfatto" },
+    { elId: "p2", text: "chi va piano va sano e va vicino" },
+    { elId: "p3", text: "amore a primo olfatto" },
     // {
     //   elId: "p4",
     //   text: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Dicta ex quidem repellat ullam ad, consectetur, labore facilis, nihil suscipit cum necessitatibus maiores consequatur alias fuga qui dolorem obcaecati corrupti sint.",
@@ -18,22 +18,30 @@ window.addEventListener("load", () => {
   startTypewriteInteraction();
 });
 
-function typeWriteMultipleElements(elements) {
-  let func = null
-  for (let i = 0; i < elements.length; i++) {
-    const element = elements[i];
-    const elHtml = document.getElementById(element.elId);
-    const callbackOnFinish = element.callbackOnFinish;
-    const fn = typeWriteOneAtTime(element.text, elHtml, { callbackOnFinish });
-    // typeWriteOneAtTime(element.text, elHtml, { callbackOnFinish });
-    // typeWriteOneAtTime(element.text, elHtml, { callbackOnFinish });
+function typeWriteMultipleElements(typewriteInfoList) {
+  // let func = null
+  for (let i = 0; i < typewriteInfoList.length; i++) {
+    const typewriteInfo = typewriteInfoList[i];
+
+    // typewrite default
+    // typeWrite({
+    //   text: typewriteInfo.text,
+    //   htmlEl: document.getElementById(typewriteInfo.elId),
+    //   callbackOnFinish: typewriteInfo.callbackOnFinish,
+    // });
+
+    // typewrite "one at a time"
+    const fn = typeWriteOneAtTime({
+      text: typewriteInfo.text,
+      htmlEl: document.getElementById(typewriteInfo.elId),
+      callbackOnFinish: typewriteInfo.callbackOnFinish,
+    });
+    fn()
     fn();
     fn();
-    fn();
+    // fn();
     // func = fn
   }
-
-  // setTimeout(func, 10000)
 
 }
 
@@ -47,11 +55,16 @@ function typeWriteMultipleElements(elements) {
  * for each extra typewrite function call.
  * Successive function calls of typeWriteOneAtTime
  * will have no effect, until the last typewriting is complete.
+ * 
+ * The only "extra effort" you have to make, is that this function
+ * will return to be called.
  */
-function typeWriteOneAtTime(text, htmlEl, { options = {}, callbackOnFinish = null }) {
+function typeWriteOneAtTime({ text, htmlEl, callbackOnFinish }) {
   // the first time the function gets called, typewrite is available
   let isTypewriteAvailable = true;
 
+  // returns a function that makes the magic happen:
+  // modify the state of the outer function
   return function () {
     // this inner function allows the value of the outer function
     // to be changed on demand, even outside of this outer function
@@ -60,7 +73,7 @@ function typeWriteOneAtTime(text, htmlEl, { options = {}, callbackOnFinish = nul
     }
 
     if (isTypewriteAvailable) {
-      typeWrite(text, htmlEl, { options, callbackOnFinish }, setTypewriteAvailable);
+      typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOneAtTime: setTypewriteAvailable });
     } else {
       console.log(
         "You are calling the typewrite function in 'one at a time' mode, " +
@@ -71,7 +84,8 @@ function typeWriteOneAtTime(text, htmlEl, { options = {}, callbackOnFinish = nul
   };
 }
 
-function typeWrite(text, htmlEl, { options = {}, callbackOnFinish = null }, setTypewriteAvailableWhenOneAtTime = null) {
+
+function typeWrite({ text, htmlEl, callbackOnFinish, setTypewriteAvailableWhenOneAtTime }) {
   // set the typewriter as not available, so
   // this function cannot be recalled, only when it was called
   // from the function "typewrite one at a time"
@@ -116,6 +130,8 @@ function typeWrite(text, htmlEl, { options = {}, callbackOnFinish = null }, setT
     }
   }, lastTimeout);
 }
+
+// HELPERS
 
 function updateText(text, htmlEl, addCursor = false) {
   const cursor = addCursor ? "|" : "";
