@@ -39,7 +39,7 @@ function typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneA
     const randomTimeout = getRandomTimeout(10, 100);
 
     setTimeout(() => {
-      updateText({text: newText, elId, addCursor: cursorExists});
+      updateText({ text: newText, elId, addCursor: cursorExists });
     }, lastTimeout);
 
     lastTimeout += timeoutStep + randomTimeout;
@@ -50,7 +50,7 @@ function typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneA
   // it's simply a timeout with timeout equal
   // to the last saved timeout
   setTimeout(() => {
-    removeCursorIfExists({elId, cursorExists});
+    removeCursorIfExists({ elId, cursorExists });
 
     // operationFinished = true;
     // if there's a callback, run it
@@ -67,7 +67,6 @@ function typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneA
   }, lastTimeout);
 }
 
-
 /**
  * Typewrite multiple elements simoltaneously.
  */
@@ -75,17 +74,8 @@ function typeWriteMultipleElements(typewriteInfoList) {
   // let func = null
   for (let i = 0; i < typewriteInfoList.length; i++) {
     const typewriteInfo = typewriteInfoList[i];
-    // console.log(typewriteInfo)
-
     // typewrite default
-    // typeWrite(typewriteInfo);
-
-    // typewrite "one at a time"
-    const fn = typeWriteOneAtTime(typewriteInfo);
-    fn();
-    fn();
-    fn();
-    fn();
+    typeWrite(typewriteInfo);
   }
 }
 
@@ -130,8 +120,8 @@ function typeWriteOneAtTime({ text, elId, callbackOnFinish }) {
 
 // HELPERS
 
-function updateText({text, elId, addCursor = false}) {
-  const elHtml = document.getElementById(elId)
+function updateText({ text, elId, addCursor = false }) {
+  const elHtml = document.getElementById(elId);
   const cursor = addCursor ? "|" : "";
   elHtml.textContent = text + cursor;
 }
@@ -140,9 +130,9 @@ function cutText(text, iUntil) {
   return text.slice(0, iUntil);
 }
 
-function removeCursorIfExists({elId, cursorExists}) {
+function removeCursorIfExists({ elId, cursorExists }) {
   if (cursorExists) {
-    const elHtml = document.getElementById(elId)
+    const elHtml = document.getElementById(elId);
     elHtml.textContent = elHtml.textContent.slice(0, -1);
   }
 }
