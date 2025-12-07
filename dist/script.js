@@ -2,12 +2,15 @@
  * USAGE
  */
 class TypeWriter {
-  constructor({ text, elId, mode, onFinishTypewrite }) {
+  constructor({ text, elId, onFinishTypewrite = null }) {
     this.text = text;
     this.elId = elId;
-    this.mode = mode;
     this.onFinishTypewrite = onFinishTypewrite;
     this.elHtml = null;
+    // on instancing, the typewriter is available,
+    // meaning that the target html element to be typewrote,
+    // is available to be typewrote
+    this._isTypewriteAvailable = true;
   }
 
   /**
@@ -37,7 +40,8 @@ class TypeWriter {
    */
   _run() {
     // console.log("running typewriting");
-    
+    this._typeWrite();
+    // fn()
   }
 
   // CORE
@@ -45,25 +49,25 @@ class TypeWriter {
   /**
    * The core typewriting function.
    */
-  _typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneAtTime }) {
-    // set the typewriter as not available, so
-    // this function cannot be recalled, only when it was called
-    // from the function "typewrite one at a time"
-    if (setTypewriteAvailableWhenOneAtTime) {
-      setTypewriteAvailableWhenOneAtTime(false);
+  _typeWrite() {
+    // if the typewriter was available, it won't be anymore,
+    // (because it's about to work = do the typewriting)
+    // until it will be made available once again
+    if (this._isTypewriteAvailable) {
+      this._isTypewriteAvailable = false;
     }
 
-    const nChars = text.length;
-    let lastTimeout = 0;
+    const nChars = this.text.length;
     const timeoutStep = 10;
     const cursorExists = true;
+    let lastTimeout = 0;
 
     for (let i = 0; i < nChars; i++) {
-      const newText = cutText(text, i + 1);
-      const randomTimeout = getRandomTimeout(10, 100);
+      const newText = this._cutText(i + 1);
+      const randomTimeout = this._getRandomTimeout(10, 100);
 
       setTimeout(() => {
-        updateText({ text: newText, elId, addCursor: cursorExists });
+        this._updateText({ text: newText, addCursor: cursorExists });
       }, lastTimeout);
 
       lastTimeout += timeoutStep + randomTimeout;
@@ -74,90 +78,47 @@ class TypeWriter {
     // it's simply a timeout with timeout equal
     // to the last saved timeout
     setTimeout(() => {
-      removeCursorIfExists({ elId, cursorExists });
+      this._removeCursorIfExists({ cursorExists });
 
       // operationFinished = true;
       // if there's a callback, run it
-      if (callbackOnFinish) {
-        callbackOnFinish();
+      if (this.onFinishTypewrite) {
+        this.onFinishTypewrite();
       }
 
-      // if the typewrite function was called from the
-      // "one at a time" function, then this callback should be set
-      // from "one at a time" function
-      if (setTypewriteAvailableWhenOneAtTime) {
-        setTypewriteAvailableWhenOneAtTime(true);
-      }
+      // because the typewriter has just finished,
+      // then it's set to be available again
+      this._isTypewriteAvailable = true;
     }, lastTimeout);
   }
 
   /**
    * Typewrite multiple elements simoltaneously.
    */
-  typeWriteMultipleElements(typewriteInfoList) {
-    // let func = null
-    for (let i = 0; i < typewriteInfoList.length; i++) {
-      const typewriteInfo = typewriteInfoList[i];
-      // typewrite default
-      typeWrite(typewriteInfo);
-    }
-  }
-
-  /**
-   * Run the typewriting function only one at a time,
-   * meaning that the function cannot be re-run until
-   * it has finished the "previous" round of typewriting.
-   * This prevents weird situations like a text container
-   * having the typewriting functionality multiple times,
-   * which means the text will be typewrite (we assume) faster
-   * for each extra typewrite function call.
-   * Successive function calls of typeWriteOneAtTime
-   * will have no effect, until the last typewriting is complete.
-   *
-   * The only "extra effort" you have to make, is that this function
-   * will return to be called.
-   */
-  typeWriteOneAtTime({ text, elId, callbackOnFinish }) {
-    // the first time the function gets called, typewrite is available
-    let isTypewriteAvailable = true;
-
-    // returns a function that makes the magic happen:
-    // modify the state of the outer function
-    return function () {
-      // this inner function allows the value of the outer function
-      // to be changed on demand, even outside of this outer function
-      function setTypewriteAvailable(val) {
-        isTypewriteAvailable = val;
-      }
-
-      if (isTypewriteAvailable) {
-        typeWrite({ text, elId, callbackOnFinish, setTypewriteAvailableWhenOneAtTime: setTypewriteAvailable });
-      } else {
-        console.log(
-          "You are calling the typewrite function in 'one at a time' mode, " +
-            "which means you can call the typewrite function again, " +
-            "only when it has finished all its typewring."
-        );
-      }
-    };
-  }
+  // _typeWriteMultipleElements(typewriteInfoList) {
+  //   // let func = null
+  //   for (let i = 0; i < typewriteInfoList.length; i++) {
+  //     const typewriteInfo = typewriteInfoList[i];
+  //     // typewrite default
+  //     typeWrite(typewriteInfo);
+  //   }
+  // }
 
   // HELPERS
 
-  _updateText({ text, elId, addCursor = false }) {
-    const elHtml = document.getElementById(elId);
+  _updateText({ text, addCursor = false }) {
     const cursor = addCursor ? "|" : "";
-    elHtml.textContent = text + cursor;
+    this.elHtml.textContent = text + cursor;
   }
 
-  _cutText(text, iUntil) {
-    return text.slice(0, iUntil);
+  _cutText(iUntil) {
+    return this.text.slice(0, iUntil);
   }
 
-  _removeCursorIfExists({ elId, cursorExists }) {
+  _removeCursorIfExists({ cursorExists }) {
     if (cursorExists) {
-      const elHtml = document.getElementById(elId);
-      elHtml.textContent = elHtml.textContent.slice(0, -1);
+      const newText = this.elHtml.textContent.slice(0, -1);
+      this.elHtml.textContent = newText;
     }
   }
 
@@ -170,9 +131,10 @@ class TypeWriter {
 
 const typewriter = new TypeWriter({
   elId: "p1",
-  text: "",
-  mode: "default",
-  onFinishTypewrite: "",
+  text: "ciao come stai sono giuseppe tavella",
+  // onFinishTypewrite: "",
 });
 
 typewriter.run();
+// typewriter.run();
+// typewriter.run();
