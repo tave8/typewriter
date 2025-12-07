@@ -1,5 +1,32 @@
 /**
- * USAGE
+    ## USAGE
+
+    ```js
+    const typewriter = new TypeWriter({
+      elId: "myParagraph",
+      text: "hello world hows it going",
+      onFinishTypewrite: cbk,
+    });
+
+    function cbk() {
+        alert("after typewriting..")
+    }
+
+    // consecutive calls will not produce any effect,
+    // meaning the typewriting will not take effect,
+    // until the current typewriting has finished its work
+    typewriter.run();
+    typewriter.run();
+    typewriter.run();
+
+    // same here - if there's any timeout that will try to 
+    // typewrite when the current typewriting is working,
+    // nothing will happen
+    setTimeout(() => {
+      typewriter.run();
+    }, 1000);
+    ```
+
  */
 class TypeWriter {
   constructor({ text, elId, onFinishTypewrite = null }) {
@@ -17,20 +44,33 @@ class TypeWriter {
    * This method is called by the instance to start the typewrite mechanism.
    */
   run() {
-    window.addEventListener("load", () => {
-      const elHtml = document.getElementById(this.elId);
-      this.elHtml = elHtml;
-      if (!this.elHtml) {
-        throw Error(
-          "Error: target typewriting html element doesn't exist, " +
-            "maybe because page has not been loaded yet, or because the " +
-            "html element with this id doesn't exist. " +
-            "It seems like the element in which to run the " +
-            "typewriting mechanism is not in the DOM."
-        );
-      }
-      this._run();
-    });
+    const inst = this;
+    function cbk() {
+      inst._setElHtml();
+      inst._run();
+    }
+    // CASE: if the page is loading.
+    // this happens when the user calls to typewrite before the page is loaded
+    if (document.readyState === "loading") {
+      window.addEventListener("load", () => {
+        // console.log("called typewrite when page was not loaded, now loaded");
+        cbk();
+        // if (!this.elHtml) {
+        //   throw Error(
+        //     "Error: target typewriting html element doesn't exist, " +
+        //       "maybe because page has not been loaded yet, or because the " +
+        //       "html element with this id doesn't exist. " +
+        //       "It seems like the element in which to run the " +
+        //       "typewriting mechanism is not in the DOM."
+        //   );
+        // }
+      });
+    }
+    // CASE: if the page is loaded.
+    else {
+      // console.log("called typewrite when page is loaded");
+      cbk();
+    }
   }
 
   /**
@@ -50,11 +90,16 @@ class TypeWriter {
    * The core typewriting function.
    */
   _typeWrite() {
+    // console.log("about to work");
+
     // if the typewriter was available, it won't be anymore,
     // (because it's about to work = do the typewriting)
     // until it will be made available once again
     if (this._isTypewriteAvailable) {
       this._isTypewriteAvailable = false;
+    } else {
+      console.log("typewriter was called while it is working, operation canceled");
+      return;
     }
 
     const nChars = this.text.length;
@@ -106,6 +151,27 @@ class TypeWriter {
 
   // HELPERS
 
+  /**
+   * Set the target html element to be typewritten,
+   * only if it's not been set already
+   */
+  _setElHtml() {
+    // console.log(this.elHtml)
+    // if the target html to be typewritten, has already been saved
+    if (this.elHtml instanceof HTMLElement) {
+      return;
+    }
+
+    const elHtml = document.getElementById(this.elId);
+    // check if the id if the target html element to be typewritten, exists
+    const elExists = elHtml instanceof HTMLElement;
+    if (!elExists) {
+      throw Error("The target element to be typewritten, " + "doesn't exist. Provide a valid id.");
+    }
+
+    this.elHtml = elHtml;
+  }
+
   _updateText({ text, addCursor = false }) {
     const cursor = addCursor ? "|" : "";
     this.elHtml.textContent = text + cursor;
@@ -127,14 +193,3 @@ class TypeWriter {
   }
 }
 
-// USAGE
-
-const typewriter = new TypeWriter({
-  elId: "p1",
-  text: "ciao come stai sono giuseppe tavella",
-  // onFinishTypewrite: "",
-});
-
-typewriter.run();
-// typewriter.run();
-// typewriter.run();
