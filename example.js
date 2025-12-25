@@ -3,7 +3,7 @@ window.addEventListener("load", main);
 
 const typewriter = new TypeWriter({
   elementSelector: "#myParagraph",
-  text: "Hello I'm Giuseppe. Refresh this page to see the typewriting",
+  text: "Hello I'm Giuseppe. Click the button to see the typewriting effect.",
   // onFinishTypewrite: callbackOnFinish,
   speed: "normal",
 });
