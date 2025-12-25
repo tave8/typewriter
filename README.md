@@ -64,6 +64,52 @@ myBtn.addEventListener("click", () => {
 })
 ```
 
+#### Typewrite and trigger "on finish" callback
+
+
+```js
+new TypeWriter({
+    elementSelector: "#myParagraph",
+    text: "Hello this is the typewriter library",
+    onFinishTypewrite: () => {
+        // do something
+    }
+}).run();
+```
+
+
+#### Typewrite one after another
+
+```js
+const typewriterText1 = new TypeWriter({
+  elementSelector: "#text1",
+  text: "text1",
+  onFinishTypewrite: () => {
+    console.log("finished typewriting text 1");
+  },
+});
+
+const typewriterText2 = new TypeWriter({
+  elementSelector: "#text2",
+  text: "text2",
+  onFinishTypewrite: () => {
+    console.log("finished typewriting text 2");
+  },
+});
+
+const typewriterText3 = new TypeWriter({
+  elementSelector: "#text3",
+  text: "text3",
+  onFinishTypewrite: () => {
+    console.log("finished typewriting text 3");
+  },
+});
+
+TypeWriter.runOneAfterAnother([typewriterText1, typewriterText2, typewriterText3]);
+
+```
+
+
 
 
 ## Features
