@@ -1,3 +1,16 @@
+/**
+ * ## Human-like typewriting, as if someone is tipying real-time.
+ * 
+ * Use it to:
+ * - add a personal touch to your apps
+ * - make an app feel more interactive for the user
+ * - or simply to display some text in a progressive "typewrite" fashion, 
+ *   instead of all at once, so the user can notice the visual change
+ * 
+ * 
+ * @author Giuseppe Tavella
+ */
+
 class TypeWriter {
   /**
    * speed: slow | normal | fast
