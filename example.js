@@ -1,27 +1,23 @@
-function main() {
-  startTypewritingInteraction();
-}
-
+function main() {}
 window.addEventListener("load", main);
 
+const typewriter = new TypeWriter({
+  elementSelector: "#myParagraph",
+  text: "Hello I'm Giuseppe. Refresh this page to see the typewriting",
+  // onFinishTypewrite: callbackOnFinish,
+  speed: "normal",
+});
+
 function startTypewritingInteraction() {
-  function callbackOnFinish() {
-    // alert("finito!");
-    // CAN I SEE THIS?
-    console.log("finished typewriting");
-  }
+  // function callbackOnFinish() {
+  //   // alert("finito!");
+  //   // CAN I SEE THIS?
+  //   console.log("finished typewriting");
+  // }
 
-  new TypeWriter({
-    elementSelector: "#myParagraph",
-    text: "Hello I'm Giuseppe. Refresh this page to see the typewriting",
-    onFinishTypewrite: callbackOnFinish,
-    speed: "normal"
-  }).run();
+  typewriter.run();
+}
 
-    new TypeWriter({
-    elementSelector: "#myParagraph2",
-    text: "Hello I'm Giuseppe. Refresh this page to see the typewriting",
-    onFinishTypewrite: callbackOnFinish,
-    speed: "normal"
-  }).run();
+function runTypewriter() {
+  startTypewritingInteraction();
 }
