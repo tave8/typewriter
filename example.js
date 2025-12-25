@@ -1,17 +1,20 @@
-function startTypewriteInteraction() 
-{
+function main() {
+  startTypewritingInteraction();
+}
+
+window.addEventListener("load", main);
+
+function startTypewritingInteraction() {
   function callbackOnFinish() {
     // alert("finito!");
     // CAN I SEE THIS?
+    console.log("finished typewriting");
   }
 
   new TypeWriter({
     elementSelector: "#myParagraph",
-    text: "Hello I'm Giuseppe"
-  }).run()
-
+    text: "Hello I'm Giuseppe. Refresh this page to see the typewriting",
+    onFinishTypewrite: callbackOnFinish,
+    speed: "normal"
+  }).run();
 }
-
-window.addEventListener("load", () => {
-  startTypewriteInteraction();
-});

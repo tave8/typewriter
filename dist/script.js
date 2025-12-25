@@ -1,8 +1,33 @@
 class TypeWriter {
-  constructor({ elementSelector, text, onFinishTypewrite = null }) {
+  /**
+   * speed: slow | normal | fast
+   */
+  constructor({ elementSelector, text, speed = "normal", onFinishTypewrite = null }) {
     this.text = text;
     this.elementSelector = elementSelector;
     this.onFinishTypewrite = onFinishTypewrite;
+
+    // typewriting speed config
+    this.speed = speed;
+
+    this.humanizeRandTimeoutSpeeds = {
+      normal: {
+        start: 10,
+        end: 100,
+      },
+      fast: {
+        start: 10,
+        end: 50,
+      },
+      slow: {
+        start: 10,
+        end: 200,
+      },
+    };
+
+    this.humanizeRandTimeoutStart = this.humanizeRandTimeoutSpeeds[speed].start;
+    this.humanizeRandTimeoutEnd = this.humanizeRandTimeoutSpeeds[speed].end;
+
     // on instancing, the typewriter is available,
     // meaning that the target html element to be typewrote,
     // is available to be typewrote
@@ -13,38 +38,37 @@ class TypeWriter {
    * This method is called by the instance to start the typewrite mechanism.
    */
   run() {
-
     const isDocumentReady = document.readyState === "complete";
 
     // page is loaded.
     if (isDocumentReady) {
-      this.whenUserRuns()
+      this.whenUserRuns();
     }
     // page is loading.
     else {
       window.addEventListener("load", this.whenUserRuns.bind(this));
     }
 
+    return this;
   }
 
-    whenUserRuns() {
-      const elementHtml = document.querySelector(this.elementSelector);
-      // check if the id if the target html element to be typewritten, exists
-      const elementHtmlExists = elementHtml instanceof HTMLElement;
+  whenUserRuns() {
+    const elementHtml = document.querySelector(this.elementSelector);
+    // check if the id if the target html element to be typewritten, exists
+    const elementHtmlExists = elementHtml instanceof HTMLElement;
 
-      if (!elementHtmlExists) {
-        throw Error("The target element to be typewritten, " + "doesn't exist. Provide a valid id.");
-      }
-
-      this.typeWrite();
+    if (!elementHtmlExists) {
+      throw Error("The target element to be typewritten, " + "doesn't exist. Provide a valid id.");
     }
+
+    this.typeWrite();
+  }
 
   /**
    * The core typewriting function.
    */
   typeWrite() {
- 
-    const self = this
+    const self = this;
 
     // console.log("about to work");
 
@@ -65,7 +89,7 @@ class TypeWriter {
 
     for (let i = 0; i < nChars; i++) {
       const newText = this.cutText(i + 1);
-      const randomTimeout = this.getRandomTimeout(10, 100);
+      const randomTimeout = this.getRandomTimeout();
 
       setTimeout(() => {
         self.updateText({ text: newText, addCursor: cursorExists });
@@ -111,7 +135,10 @@ class TypeWriter {
     }
   }
 
-  getRandomTimeout(start = 10, end = 50) {
+  getRandomTimeout() {
+    let start = this.humanizeRandTimeoutStart;
+    let end = this.humanizeRandTimeoutEnd;
+
     return Math.floor(Math.random() * (end - start + 1)) + start;
   }
 }
