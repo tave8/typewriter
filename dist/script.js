@@ -1,13 +1,13 @@
 /**
  * ## Human-like typewriting, as if someone is tipying real-time.
- * 
+ *
  * Use it to:
  * - add a personal touch to your apps
  * - make an app feel more interactive for the user
- * - or simply to display some text in a progressive "typewrite" fashion, 
+ * - or simply to display some text in a progressive "typewrite" fashion,
  *   instead of all at once, so the user can notice the visual change
- * 
- * 
+ *
+ *
  * @author Giuseppe Tavella
  */
 
@@ -18,6 +18,8 @@ class TypeWriter {
   constructor({ elementSelector, text, speed = "normal", onFinishTypewrite = null }) {
     this.text = text;
     this.elementSelector = elementSelector;
+    // internal uses
+    this.beforeFinishTypewrite = null
     this.onFinishTypewrite = onFinishTypewrite;
 
     // typewriting speed config
@@ -118,6 +120,10 @@ class TypeWriter {
     setTimeout(() => {
       self.removeCursorIfExists({ cursorExists });
 
+      if (this.beforeFinishTypewrite) {
+        this.beforeFinishTypewrite()
+      }
+
       // operationFinished = true;
       // if there's a callback, run it
       if (this.onFinishTypewrite) {
@@ -128,6 +134,35 @@ class TypeWriter {
       // then it's set to be available again
       this.isTypewriteAvailable = true;
     }, lastTimeout);
+  }
+
+
+  /**
+   * Run one typewriter instance after another.
+   */
+  static runOneAfterAnother(listTypewriters) {
+    // in the onFinishTypewrite of the typewriter at index 0,
+    // before calling the user-defined onFinishTypewrite (if it exists)
+    // you call the run of the next typewriteer (index 1)
+
+    // iterate until the first to last typewriter,
+    // because we also access the next
+    for (let i = 0; i < listTypewriters.length - 1; i++) {
+      const currTypewriter = listTypewriters[i];
+      const nextTypewriter = listTypewriters[i+1]
+      currTypewriter.beforeFinishTypewrite = function () {
+        nextTypewriter.run()
+      }
+    }
+
+    // run the first typewriter, and the others will run also
+    listTypewriters[0].run()
+  }
+
+  static runParallel(listTypewriters) {
+    listTypewriters.forEach((typewriter) => {
+      typewriter.run();
+    });
   }
 
   // HELPERS
